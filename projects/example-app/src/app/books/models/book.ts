@@ -1,5 +1,7 @@
+import { ID } from '@datorama/akita';
+
 export interface Book {
-  id: string;
+  id: ID;
   volumeInfo: {
     title: string;
     subtitle: string;

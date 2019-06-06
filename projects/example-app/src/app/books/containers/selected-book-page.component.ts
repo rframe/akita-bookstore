@@ -1,11 +1,9 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 
-import { select, Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 
-import { SelectedBookPageActions } from '@example-app/books/actions';
-import { Book } from '@example-app/books/models';
-import * as fromBooks from '@example-app/books/reducers';
+import { AkitaBookService, Book, BookQuery } from '@example-app/books/akita';
+import { map, tap } from 'rxjs/operators';
 
 @Component({
   selector: 'bc-selected-book-page',
@@ -23,20 +21,22 @@ export class SelectedBookPageComponent {
   book$: Observable<Book>;
   isSelectedBookInCollection$: Observable<boolean>;
 
-  constructor(private store: Store<fromBooks.State>) {
-    this.book$ = store.pipe(select(fromBooks.getSelectedBook)) as Observable<
-      Book
-    >;
-    this.isSelectedBookInCollection$ = store.pipe(
-      select(fromBooks.isSelectedBookInCollection)
-    );
+  constructor(private bookQuery: BookQuery,
+              private akitaBookService: AkitaBookService) {
+
+    this.book$ = (this.bookQuery.selectActive<Book>() as Observable<Book | Book[]>)
+      .pipe(
+        map((book) => book as Book)
+      );
+
+    this.isSelectedBookInCollection$ = this.bookQuery.isInCollection$;
   }
 
-  addToCollection(book: Book) {
-    this.store.dispatch(SelectedBookPageActions.addBook({ book }));
+  addToCollection({ id }: Book) {
+    this.akitaBookService.addToCollection(id)
   }
 
-  removeFromCollection(book: Book) {
-    this.store.dispatch(SelectedBookPageActions.removeBook({ book }));
+  removeFromCollection({ id }: Book) {
+    this.akitaBookService.removeFromCollection(id)
   }
 }

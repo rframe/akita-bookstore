@@ -1,11 +1,8 @@
-import { Component, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnDestroy, ChangeDetectionStrategy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Store } from '@ngrx/store';
-import { Subscription } from 'rxjs';
-import { map } from 'rxjs/operators';
 
-import * as fromBooks from '@example-app/books/reducers';
-import { ViewBookPageActions } from '@example-app/books/actions';
+import { ID } from '@datorama/akita';
+import { AkitaBookService } from '@example-app/books/akita';
 
 /**
  * Note: Container components are also reusable. Whether or not
@@ -24,16 +21,22 @@ import { ViewBookPageActions } from '@example-app/books/actions';
     <bc-selected-book-page></bc-selected-book-page>
   `,
 })
-export class ViewBookPageComponent implements OnDestroy {
-  actionsSubscription: Subscription;
+export class ViewBookPageComponent implements OnInit, OnDestroy {
+  // actionsSubscription: Subscription;
 
-  constructor(store: Store<fromBooks.State>, route: ActivatedRoute) {
-    this.actionsSubscription = route.params
-      .pipe(map(params => ViewBookPageActions.selectBook({ id: params.id })))
-      .subscribe(action => store.dispatch(action));
+  constructor(private akitaBookService: AkitaBookService, private route: ActivatedRoute) {
+    // this.actionsSubscription = route.params
+    //   .pipe(map(params => ViewBookPageActions.selectBook({ id: params.id })))
+    //   .subscribe(action => store.dispatch(action));
+
+  }
+
+  ngOnInit(): void {
+    const activeBookId = this.route.snapshot.paramMap.get('id');
+    this.akitaBookService.setActive(activeBookId as ID);
   }
 
   ngOnDestroy() {
-    this.actionsSubscription.unsubscribe();
+    // this.actionsSubscription.unsubscribe();
   }
 }

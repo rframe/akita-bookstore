@@ -1,11 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { select, Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
-
-import { AuthActions } from '@example-app/auth/actions';
-import * as fromAuth from '@example-app/auth/reducers';
-import * as fromRoot from '@example-app/reducers';
-import { LayoutActions } from '@example-app/core/actions';
+import { AkitaAuthService, AuthQuery } from '@example-app/auth/akita';
+import { AkitaLayoutService, LayoutQuery } from '@example-app/core/akita';
 
 @Component({
   selector: 'bc-app',
@@ -38,13 +34,16 @@ export class AppComponent {
   showSidenav$: Observable<boolean>;
   loggedIn$: Observable<boolean>;
 
-  constructor(private store: Store<fromRoot.State & fromAuth.State>) {
+  constructor(private akitaAuthService: AkitaAuthService,
+              private authQuery: AuthQuery,
+              private akitaLayoutService: AkitaLayoutService,
+              private layoutQuery: LayoutQuery) {
     /**
      * Selectors can be applied with the `select` operator which passes the state
      * tree to the provided selector
      */
-    this.showSidenav$ = this.store.pipe(select(fromRoot.getShowSidenav));
-    this.loggedIn$ = this.store.pipe(select(fromAuth.getLoggedIn));
+    this.showSidenav$ = this.layoutQuery.sideNavOpen$;
+    this.loggedIn$ = this.authQuery.isLoggedIn$;
   }
 
   closeSidenav() {
@@ -54,16 +53,16 @@ export class AppComponent {
      * updates and user interaction through the life of our
      * application.
      */
-    this.store.dispatch(LayoutActions.closeSidenav());
+    this.akitaLayoutService.setSideNavState(false);
   }
 
   openSidenav() {
-    this.store.dispatch(LayoutActions.openSidenav());
+    this.akitaLayoutService.setSideNavState(true);
   }
 
   logout() {
     this.closeSidenav();
 
-    this.store.dispatch(AuthActions.logoutConfirmation());
+    this.akitaAuthService.logoutConfirmation();
   }
 }

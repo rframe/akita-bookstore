@@ -44,7 +44,7 @@ export class BookStorageService {
 
   removeFromCollection(ids: Array<string>): Observable<Book[]> {
     return this.getCollection().pipe(
-      map((value: Book[]) => value.filter(item => !ids.includes(item.id))),
+      map((value: Book[]) => value.filter(({id}) => !ids.includes(id.toString()))),
       tap((value: Book[]) =>
         this.storage.setItem(this.collectionKey, JSON.stringify(value))
       )

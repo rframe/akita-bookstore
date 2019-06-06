@@ -1,12 +1,11 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 
-import { select, Store } from '@ngrx/store';
+import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
-import { take } from 'rxjs/operators';
+import { switchMap, take, tap } from 'rxjs/operators';
 
-import { FindBookPageActions } from '@example-app/books/actions';
 import { Book } from '@example-app/books/models';
-import * as fromBooks from '@example-app/books/reducers';
+import { AkitaBookService, BookQuery } from '@example-app/books/akita';
 
 @Component({
   selector: 'bc-find-book-page',
@@ -29,17 +28,18 @@ export class FindBookPageComponent {
   loading$: Observable<boolean>;
   error$: Observable<string>;
 
-  constructor(private store: Store<fromBooks.State>) {
-    this.searchQuery$ = store.pipe(
-      select(fromBooks.getSearchQuery),
-      take(1)
+  constructor(private bookQuery: BookQuery,
+              private akitaBookService: AkitaBookService) {
+    this.searchQuery$ = this.bookQuery.selectSearchTerm$;
+    this.loading$ = this.bookQuery.selectLoading();
+    this.books$ = this.bookQuery.selectResultIds$.pipe(
+      switchMap(ids => this.bookQuery.selectMany(ids))
     );
-    this.books$ = store.pipe(select(fromBooks.getSearchResults));
-    this.loading$ = store.pipe(select(fromBooks.getSearchLoading));
-    this.error$ = store.pipe(select(fromBooks.getSearchError));
+    // this.error$ = store.pipe(select(fromBooks.getSearchError));
   }
 
   search(query: string) {
-    this.store.dispatch(FindBookPageActions.searchBooks({ query }));
+    this.akitaBookService.updateSearchTerm(query);
+    this.akitaBookService.searchBooks(query);
   }
 }
