@@ -1,0 +1,7 @@
+package(default_visibility = ["//visibility:public"])
+
+# Needed so that tsconfig.json can be referenced from BUILD rules.
+exports_files([
+    "tsconfig.json",
+    "LICENSE",
+])
